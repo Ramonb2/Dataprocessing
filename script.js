@@ -14,10 +14,10 @@ xmlhttp.onreadystatechange = function () {
         var sites = [];
 
         myArr.forEach(element => {
-            
+
 
             var site = {
-                
+
                 label: element.Country.toString(),
                 backgroundColor: dynamicColors(),
                 borderColor: "rgb(69,70,72)",
@@ -56,10 +56,10 @@ xmlhttp.onreadystatechange = function () {
         };
         new Chart(ctx, { type: "bubble", data: data, options: options });
     }
-    
+
 
 };
-xmlhttp.open('GET', 'http://10.232.35.47:3000/AGD', true);
+xmlhttp.open('GET', 'http://localhost:3000/AGD', true);
 xmlhttp.send();
 
 

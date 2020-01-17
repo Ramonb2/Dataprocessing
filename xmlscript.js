@@ -46,7 +46,7 @@ xmlhttp.onreadystatechange = function () {
             sites.push(site);
         }
 
-     var data = { labels: ["countries"], datasets: sites };
+        var data = { labels: ["countries"], datasets: sites };
         var options = {
             title: { display: true, text: 'Depression, gdp and alcohol' },
             scales: {
@@ -71,6 +71,6 @@ xmlhttp.onreadystatechange = function () {
 
 
 };
-xmlhttp.open("GET", "http://10.232.35.47:3000/AGD/xml", true);
+xmlhttp.open("GET", "http://localhost:3000/AGD/xml", true);
 xmlhttp.send()
 

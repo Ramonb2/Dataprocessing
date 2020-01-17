@@ -17,7 +17,7 @@ require_once 'vendor/autoload.php';
 use JsonSchema\Validator;
 use JsonSchema\Constraints\Constraint;
  
-$config = json_decode(file_get_contents('http://10.232.35.47:3000/AGD'));
+$config = json_decode(file_get_contents('http://localhost:3000/AGD'));
 $validator = new Validator; $validator->validate(
   $config,
   (object)['$ref' => 'file://' . realpath('schema.json')],
@@ -37,7 +37,7 @@ if ($validator->isValid()) {
 
 
 $xml= new DOMDocument();
-$xml->load("http://10.232.35.47:3000/AGD/xml"); // loads the xml from the api
+$xml->load("http://localhost:3000/AGD/xml"); // loads the xml from the api
 if (!$xml->schemaValidate("schema.xsd")) // validates it according to the schema
 {
    echo "not correct";
