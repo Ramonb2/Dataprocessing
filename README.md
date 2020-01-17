@@ -9,3 +9,5 @@ This api gives data on the relation between The consumption of alcohol, depressi
 The application shows a bubble chart in whicht a the size of the bubble represents the depression,
 the height of the bubble on the graph the GDP ranking in the world and the x-axis the amount of alcohol
 consumption.
+
+The code will be improved later but due to lack of time it is like it is. Sorry.
