@@ -13,7 +13,22 @@ router.get('/', (req, res, next) => {
     con.connect(function (err) {
         con.query("SELECT * FROM `alcohol-usage`", function (err, result, fields) {
             if (err) throw err;
+            if(req.headers['content-type'] === "application/xml"){
+            var xml = builder.create('Countries');
+            if (result.length != 0) {
+                for (var i = 0; i < result.length; i++) {
+                    xml.ele('Country')
+                        .ele('Country', result[i]['Country']).up()
+                        .ele('total_litres_of_pure_alcohol', result[i]['total_litres_of_pure_alcohol']).up()
+                        .ele('continent', result[i]['continent']).end()
+                }
+                var xmldoc = xml.toString({ pretty: true });
+                var xmldoc = xmldoc.replace(/^/, "<?xml version='1.0' encoding='UTF-8' ?>\n");
+                res.status(200).send(xmldoc);
+            }
+         } else {
             res.status(200).json(result);
+            }
         });
     });
 });
@@ -24,7 +39,22 @@ router.get('/:COUNTRY', (req, res, next) => {
     con.connect(function (err) {
         con.query("SELECT * FROM `alcohol-usage` WHERE Country ='" + country + "'", function (err, Country, fields) {
             if (err) throw err;
+            if(req.headers['content-type'] === "application/xml"){
+                var xml = builder.create('Countries');
+                if (err) throw err;
+                for (var i = 0; i < result.length; i++) {
+                    xml.ele('Country')
+                        .ele('Country', result[i]['Country']).up()
+                        .ele('total_litres_of_pure_alcohol', result[i]['total_litres_of_pure_alcohol']).up()
+                        .ele('continent', result[i]['continent']).end()
+                }
+                var xmldoc = xml.toString({ pretty: true });
+                var xmldoc = xmldoc.replace(/^/, "<?xml version='1.0' encoding='UTF-8' ?>\n");
+                xmldoc += "</countries";
+                res.status(200).send(xmldoc);
+            } else{
             return res.status(200).send({ Country });
+            }
         });
     });
 });
@@ -42,7 +72,21 @@ router.get('/continent/:continent', (req, res, next) => {
             case "SA":
                 con.query("SELECT * FROM `alcohol-usage` WHERE continent = '" + continent + "'", function (err, result, fields) {
                     if (err) throw err;
-                    res.status(200).json(result);
+                    if(req.headers['content-type'] === "application/xml"){
+                    var xml = builder.create('Countries');
+                    if (err) throw err;
+                    for (var i = 0; i < result.length; i++) {
+                        xml.ele('Country')
+                            .ele('Country', result[i]['Country']).up()
+                            .ele('total_litres_of_pure_alcohol', result[i]['total_litres_of_pure_alcohol']).up()
+                            .ele('continent', result[i]['continent']).end()
+                    }
+                    var xmldoc = xml.toString({ pretty: true });
+                    var xmldoc = xmldoc.replace(/^/, "<?xml version='1.0' encoding='UTF-8' ?>\n");
+                    res.send(xmldoc);}
+                    else{
+                        res.status(200).json(result);
+                    }
                 });
                 break;
             case "ATL":

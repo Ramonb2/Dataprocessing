@@ -1,4 +1,6 @@
 const express = require('express');
+const swaggerJsDoc = require("swagger-jsdoc");
+const swaggerUi = require("swagger-ui-express")
 const router = express.Router();
 var mysql = require('mysql');
 var builder = require('xmlbuilder');
@@ -13,8 +15,28 @@ const con = mysql.createConnection({
 router.get('/', (req, res, next) => {
     con.connect(function (err) {
         con.query("SELECT * FROM `world-index`", function (err, result, fields) {
-            if (err) throw err;
+            if(req.headers['content-type'] === "application/xml"){
+                var xml = builder.create('Countries');
+                if (err) throw err;
+                for(var i=0; i< result.length; i++){
+                    xml.ele('Country')
+                    .ele('Country', result[i]['Country']).up()
+                    .ele('Ladder', result[i]['Ladder']).up()
+                    .ele('SD_of_Ladder', result[i]['SD_of_Ladder']).up()
+                    .ele('Positive_affect', result[i]['Positive_affect']).up()
+                    .ele('Negative_affect', result[i]['Negative_affect']).up()
+                    .ele('Social_support', result[i]['Social_support']).up()
+                    .ele('Corruption', result[i]['Corruption']).up()
+                    .ele('Generosity', result[i]['Generosity']).up()
+                    .ele('Log_of_GDP_per_capita', result[i]['Log_of_GDP_per_capita']).up()
+                    .ele('Healthy_life_expectancy', result[i]['Healthy_life_expectancy']).end()
+                }     
+                var xmldoc = xml.toString({ pretty: true });            
+                var xmldoc = xmldoc.replace(/^/,"<?xml version='1.0' encoding='UTF-8' ?>\n");
+                res.status(200).send(xmldoc);
+        } else{
             res.status(200).json(result);
+        }
         });
     });
 });

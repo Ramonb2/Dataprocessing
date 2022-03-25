@@ -14,7 +14,25 @@ router.get('/', (req, res, next) => {
     con.connect(function (err) {
         con.query("SELECT * FROM `countries`", function (err, result, fields) {
             if (err) throw err;
-            res.status(200).json(result);
+            if(req.headers['content-type'] === "application/xml"){
+                if (result.length > 0) {
+                    for (var i = 0; i < result.length; i++) {
+                        var xml = builder.create('Countries');
+                        xml.ele('country')
+                            .ele('code', result[i]['CODE']).up()
+                            .ele('country_name', result[i]['COUNTRY_NAME']).up()
+                            .ele('Full_name', result[i]['FULL_NAME']).up()
+                            .ele('ISO3', resuls[i]['ISO3']).up()
+                            .ele('Country_number', result[i]['COUNTRY_NUMBER']).up()
+                            .ele('Continent_code', result[i]['CONTINENT_CODE']).end()
+                    }
+                    var xmldoc = xml.toString({ pretty: true });
+                    var xmldoc = xmldoc.replace(/^/, "<?xml version='1.0' encoding='UTF-8' ?>\n");
+                    return res.status(200).send(xmldoc);
+            }
+         } else{
+                res.status(200).json(result);
+            }
         });
     });
 });
@@ -43,7 +61,25 @@ router.get('/continent/:continent', (req, res, next) => {
             case "SA":
                 con.query("SELECT * FROM `countries` WHERE continent_code = '" + continent + "'", function (err, result, fields) {
                     if (err) throw err;
-                    res.status(200).json(result);
+                    if(req.headers['content-type'] === "application/xml"){
+                        if (result.length > 0) {
+                            for (var i = 0; i < result.length; i++) {
+                                var xml = builder.create('Countries');
+                                xml.ele('country')
+                                    .ele('code', result[i]['CODE']).up()
+                                    .ele('country_name', result[i]['COUNTRY_NAME']).up()
+                                    .ele('Full_name', result[i]['FULL_NAME']).up()
+                                    .ele('ISO3', resuls[i]['ISO3']).up()
+                                    .ele('Country_number', result[i]['COUNTRY_NUMBER']).up()
+                                    .ele('Continent_code', result[i]['CONTINENT_CODE']).end()
+                            }
+                            var xmldoc = xml.toString({ pretty: true });
+                            var xmldoc = xmldoc.replace(/^/, "<?xml version='1.0' encoding='UTF-8' ?>\n");
+                            return res.status(201).send(xmldoc);
+                        }
+                    } else{
+                        res.status(200).json(result);
+                    }
                 });
                 break;
             case "ATL":

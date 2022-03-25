@@ -14,7 +14,24 @@ router.get('/', (req, res, next) => {
     con.connect(function (err) {
         con.query("SELECT * FROM `depression`", function (err, result, fields) {
             if (err) throw err;
-            res.status(200).json(result);
+            if(req.headers['content-type'] === "application/xml"){
+                var xml = builder.create('Countries');
+                if (err) throw err;
+                if (result.length != 0) {
+                    for (var i = 0; i < result.length; i++) {
+                        xml.ele('Country')
+                            .ele('Country', result[i]['Country']).up()
+                            .ele('Code', result[i]['Code']).up()
+                            .ele('Year', result[i]['Year']).up()
+                            .ele('Depression', result[i]['Depression']).end()
+                    }
+                    var xmldoc = xml.toString({ pretty: true });
+                    var xmldoc = xmldoc.replace(/^/, "<?xml version='1.0' encoding='UTF-8' ?>\n");
+                    res.status(200).send(xmldoc);
+            }
+        } else{
+                res.status(200).json(result);
+            }
         });
     });
 });
@@ -25,7 +42,23 @@ router.get('/:COUNTRY', (req, res, next) => {
     con.connect(function (err) {
         con.query("SELECT * FROM `depression` WHERE Country ='" + country + "'", function (err, Country, fields) {
             if (err) throw err;
-            return res.status(200).send({ Country });
+            if(req.headers['content-type'] === "application/xml"){
+            var xml = builder.create('Countries');
+            if (result.length != 0) {
+                for (var i = 0; i < result.length; i++) {
+                    xml.ele('Country')
+                        .ele('Country', result[i]['Country']).up()
+                        .ele('Code', result[i]['Code']).up()
+                        .ele('Year', result[i]['Year']).up()
+                        .ele('Depression', result[i]['Depression']).end()
+                }
+                var xmldoc = xml.toString({ pretty: true });
+                var xmldoc = xmldoc.replace(/^/, "<?xml version='1.0' encoding='UTF-8' ?>\n");
+                res.status(200).send(xmldoc);
+            }
+            } else{
+                return res.status(200).send({ Country });
+            }
         });
     });
 });
@@ -45,7 +78,23 @@ router.get('/continent/:continent', (req, res, next) => {
                     "inner join countries as B on A.Country = B.COUNTRY_NAME " +
                     "WHERE B.CONTINENT_CODE = '" + continent + "'", function (err, result, fields) {
                         if (err) throw err;
+                        if(req.headers['content-type'] === "application/xml"){
+                            var xml = builder.create('Countries');
+                            if (result.length != 0) {
+                                for (var i = 0; i < result.length; i++) {
+                                    xml.ele('Country')
+                                        .ele('Country', result[i]['Country']).up()
+                                        .ele('Code', result[i]['Code']).up()
+                                        .ele('Year', result[i]['Year']).up()
+                                        .ele('Depression', result[i]['Depression']).end()
+                                }
+                                var xmldoc = xml.toString({ pretty: true });
+                                var xmldoc = xmldoc.replace(/^/, "<?xml version='1.0' encoding='UTF-8' ?>\n");
+                                res.status(200).send(xmldoc);
+                        }
+                    } else{
                         res.status(200).json(result);
+                    }
                     });
                 break;
             case "ATL":

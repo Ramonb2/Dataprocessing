@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 var mysql = require('mysql');
+var builder = require('xmlbuilder');
 const con = mysql.createConnection({
     host: "localhost",
     user: "root",
@@ -13,7 +14,22 @@ router.get('/', (req, res, next) => {
     con.connect(function (err) {
         con.query("SELECT A.Country, A.depression, C.Log_of_GDP_per_capita, B.total_litres_of_pure_alcohol FROM depression as A JOIN `alcohol-usage` as B on A.Country = B.Country JOIN`world-index` as C on A.Country = C.Country", function (err, result, fields) {
             if (err) throw err;
-            res.status(200).json(result);
+            if(req.headers['content-type'] === "application/xml"){
+                var xml = builder.create('Countries');
+                for (var i = 0; i < result.length; i++) {
+                    xml.ele('Country')
+                        .ele('Country', result[i]['Country']).up()
+                        .ele('Depression', result[i]['depression']).up()
+                        .ele('Log_of_GDP_per_capita', result[i]['Log_of_GDP_per_capita']).up()
+                        .ele('total_litres_of_pure_alcohol', result[i]['total_litres_of_pure_alcohol']).end()
+                }
+                var xmldoc = xml.toString({ pretty: true });
+                var xmldoc = xmldoc.replace(/^/, "<?xml version='1.0' encoding='UTF-8' ?>\n");
+                res.status(200).send(xmldoc);
+            }
+            else{
+                res.status(200).json(result);
+            }
         });
     });
 
@@ -32,7 +48,21 @@ router.get('/:continent', (req, res, next) => {
             case "SA":
                 con.query("SELECT A.Country, A.depression, C.Log_of_GDP_per_capita, B.total_litres_of_pure_alcohol FROM depression as A JOIN `alcohol-usage` as B on A.Country = B.Country JOIN`world-index` as C on A.Country = C.Country WHERE B.continent ='" + continent + "'", function (err, result, fields) {
                     if (err) throw err;
+                    if(req.headers['content-type'] === "application/xml"){
+                        var xml = builder.create('Countries');
+                    for (var i = 0; i < result.length; i++) {
+                        xml.ele('Country')
+                            .ele('Country_name', result[i]['Country']).up()
+                            .ele('Depression', result[i]['depression']).up()
+                            .ele('Log_of_GDP_per_capita', result[i]['Log_of_GDP_per_capita']).up()
+                            .ele('total_litres_of_pure_alcohol', result[i]['total_litres_of_pure_alcohol']).end()
+                    }
+                    var xmldoc = xml.toString({ pretty: true });
+                    var xmldoc = xmldoc.replace(/^/, "<?xml version='1.0' encoding='UTF-8' ?>\n");
+                    res.send(xmldoc);
+                    } else{
                     res.status(200).json(result);
+                    }
                 });
                 break;
             case "ATL":

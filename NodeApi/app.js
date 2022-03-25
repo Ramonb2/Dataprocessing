@@ -1,9 +1,51 @@
 const express = require('express');
 const morgan = require('morgan');
+const swaggerJsDoc = require("swagger-jsdoc");
+const swaggerUi = require("swagger-ui-express")
 const bodyParser = require('body-parser');
 var xmlparser = require('express-xml-bodyparser');
-const app = express();
 
+const swaggerOptions = {
+    swaggerDefinition: {
+            openapi: "3.0.0",
+            info:{
+                title: "rest api for Dataprocessing",
+                version: "1.6",
+                description: "Dataprocessing api",
+                contact: {
+                    name:"Ramon Brakels"
+                },       
+            },
+            servers: [
+                {
+                    url: "http://{username}:{port}/{basePath}",
+                    description: "Database",
+                    variables: {
+                        username: {
+                            default: "localhost",
+                            description: "value"
+                        }
+                    },
+                    port: {
+                        enum: [
+                            3000
+                        ],
+                        default: 3000
+                    },
+                    basePath: {
+                        default: "/"
+                    }
+                }
+                
+            ]
+    },
+    apis: ["./AGD/*.js", "./countries/*.js","./depression/*.js", "./wealth/*.js","./alcohol-usage/*.js"]
+};
+
+
+const app = express();
+const swaggerDocs = swaggerJsDoc(swaggerOptions);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 // making sure that you won't get CORS errors.
 
 app.options("/*", function (req, res, next) {
@@ -12,6 +54,8 @@ app.options("/*", function (req, res, next) {
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
     res.sendStatus(200);
 });
+
+
 
 app.all('*', function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
