@@ -1,23 +1,36 @@
-//for validating json schema
-const jsonValidator = require('jsonschema').Validator;
-const validator = new jsonValidator();
-const RE2 = require("re2");
-const { errorMonitor } = require('tedious/lib/bulk-load');
+const { readFileSync } = require('fs');
+const ajv = new (require('ajv'))();
 
-function validateJson(jsonvalidation) {
-    return (req, res, next) => {
-        const valid = validator.validate(req.body, jsonvalidation, { throwError: true, regExp: RE2 });
-        if (!valid) {
-            const errors = errorMonitor;
-            res.status(500).json(errors);
-        } else {
-            return res.status(200).json({
-                success: 1,
-                data: results
-            });
-        }
-        next();
-    };
+
+function parser(input) {
+
+    try{
+
+    
+    let schemaFile = './Validators/schema.json';
+    function readJsonFile(file) {
+        let raw = readFileSync(file);
+        file.parse
+        return JSON.parse(raw);
+    }
+
+    let schema = readJsonFile(schemaFile);
+
+    const isValid = ajv.validate(schema, input);
+
+    if (!isValid) {
+        console.error(JSON.stringify(ajv.errors, null, 2));
+        return undefined;
+    }
+        
+    ajv.compile(schema);
+    console.info('[INFO] Valid!');
+    return true;
+}
+catch(err){
+    console.error(err);
+    return undefined;
+}
 }
 
-module.exports = validateJson;
+module.exports = parser;

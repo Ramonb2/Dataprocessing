@@ -1,0 +1,76 @@
+{
+	"definitions": {},
+	"$schema": "http://json-schema.org/draft-07/schema#", 
+	
+	"title": "Root", 
+	"type": "object",
+	"required": [
+		"CODE",
+		"COUNTRY_NAME",
+		"FULL_NAME",
+		"ISO3",
+		"COUNTRY_NUMBER",
+		"CONTINENT_CODE"
+	],
+	"properties": {
+		"CODE": {
+			"$id": "#root/CODE", 
+			"title": "Code", 
+			"type": "string",
+			"default": "",
+			"examples": [
+				"AQaa"
+			],
+			"pattern": "^.*$"
+		},
+		"COUNTRY_NAME": {
+			"$id": "#root/COUNTRY_NAME", 
+			"title": "Country_name", 
+			"type": "string",
+			"default": "",
+			"examples": [
+				"Andorraq"
+			],
+			"pattern": "^.*$"
+		},
+		"FULL_NAME": {
+			"$id": "#root/FULL_NAME", 
+			"title": "Full_name", 
+			"type": "string",
+			"default": "",
+			"examples": [
+				"Principality of Andorra"
+			],
+			"pattern": "^.*$"
+		},
+		"ISO3": {
+			"$id": "#root/ISO3", 
+			"title": "Iso3", 
+			"type": "string",
+			"default": "",
+			"examples": [
+				"AND"
+			],
+			"pattern": "^.*$"
+		},
+		"COUNTRY_NUMBER": {
+			"$id": "#root/COUNTRY_NUMBER", 
+			"title": "Country_number", 
+			"type": "integer",
+			"examples": [
+				20
+			],
+			"default": 0
+		},
+		"CONTINENT_CODE": {
+			"$id": "#root/CONTINENT_CODE", 
+			"title": "Continent_code", 
+			"type": "string",
+			"default": "",
+			"examples": [
+				"EU"
+			],
+			"pattern": "^.*$"
+		}
+	}
+}

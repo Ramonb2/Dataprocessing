@@ -17,10 +17,35 @@ router.use((err, req, res, next) => {
     res.status(500).json({ message: 'Something went wrong!', error: err.message });
 });
 
+
+function buildXml(data) {
+    const builder = require('xmlbuilder');
+    const xml = builder.create('Countries');
+    
+    data.forEach(item => {
+        const countryElement = xml.ele('Country');
+        countryElement.ele('Country', item['Country']).up()
+            .ele('Ladder', item['Ladder']).up()
+            .ele('SD_of_Ladder', item['SD_of_Ladder']).up()
+            .ele('Positive_affect', item['Positive_affect']).up()
+            .ele('Negative_affect', item['Negative_affect']).up()
+            .ele('Social_support', item['Social_support']).up()
+            .ele('Corruption', item['Corruption']).up()
+            .ele('Generosity', item['Generosity']).up()
+            .ele('Log_of_GDP_per_capita', item['Log_of_GDP_per_capita']).up()
+            .ele('Healthy_life_expectancy', item['Healthy_life_expectancy']);
+    });
+
+    const xmldoc = xml.end({ pretty: true });
+    return xmldoc.replace(/^/, "<?xml version='1.0' encoding='UTF-8' ?>\n");
+}
+
 /**
  * @swagger
  * /wealth:
  *  get:
+ *      tags:
+ *        - wealth
  *      description: Select wealth data from database
  *      responses:
  *          '200':
@@ -31,36 +56,25 @@ router.use((err, req, res, next) => {
  *              description: Bad GET Request
  */
 router.get('/', async (req, res, next) => {
-    await pool.query("SELECT * FROM `world-index`", function (err, result, fields) {
+    try{
+    const result = await pool.query("SELECT * FROM `world-index`");
         if (req.headers['content-type'] === "application/xml") {
-            var xml = builder.create('Countries');
-            if (err) next(err);
-            for (var i = 0; i < result.length; i++) {
-                xml.ele('Country')
-                    .ele('Country', result[i]['Country']).up()
-                    .ele('Ladder', result[i]['Ladder']).up()
-                    .ele('SD_of_Ladder', result[i]['SD_of_Ladder']).up()
-                    .ele('Positive_affect', result[i]['Positive_affect']).up()
-                    .ele('Negative_affect', result[i]['Negative_affect']).up()
-                    .ele('Social_support', result[i]['Social_support']).up()
-                    .ele('Corruption', result[i]['Corruption']).up()
-                    .ele('Generosity', result[i]['Generosity']).up()
-                    .ele('Log_of_GDP_per_capita', result[i]['Log_of_GDP_per_capita']).up()
-                    .ele('Healthy_life_expectancy', result[i]['Healthy_life_expectancy']).end()
-            }
-            var xmldoc = xml.toString({ pretty: true });
-            var xmldoc = xmldoc.replace(/^/, "<?xml version='1.0' encoding='UTF-8' ?>\n");
-            res.status(200).send(xmldoc);
+            var xmldoc = buildXml(result);
+            res.send(xmldoc);
         } else {
             res.status(200).json(result);
         }
-    });
+    } catch (err) {
+        next(err);
+    }
 });
 
 /**
  * @swagger
  * /wealth/{COUNTRY}:
  *  get:
+ *      tags:
+ *          - wealth
  *      description: Select wealth data for a specific country from database
  *      responses:
  *          '200':
@@ -82,6 +96,8 @@ router.get('/:COUNTRY', async (req, res, next) => {
  * @swagger
  * /wealth/{continent}:
  *  get:
+ *      tags:
+ *         - wealth
  *      description: Select wealth data for a whole continent from database
  *      responses:
  *          '200':
@@ -125,6 +141,8 @@ router.get('/continent/:continent', async (req, res, next) => {
  * @swagger
  * /wealth:
  *  post:
+ *      tags:
+ *        - wealth
  *      description: Add wealth data from a country to database
  *      responses:
  *          '200':
@@ -168,6 +186,8 @@ router.post('/', async function (req, res, next) {
  * @swagger
  * /wealth/{COUNTRY}:
  *  delete:
+ *      tags:
+ *       - wealth
  *      description: Delete wealth data from a country from database
  *      responses:
  *          '200':

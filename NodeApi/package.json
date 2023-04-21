@@ -15,6 +15,7 @@
   "author": "Ramon Brakels",
   "license": "ISC",
   "dependencies": {
+    "ajv": "^8.12.0",
     "body-parser": "^1.20.2",
     "body-parser-xml": "^2.0.5",
     "express": "^4.18.2",

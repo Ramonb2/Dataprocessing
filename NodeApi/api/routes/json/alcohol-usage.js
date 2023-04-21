@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 var mysql = require('mysql');
+const builder = require('xmlbuilder');
 const pool = mysql.createPool({
     connectionLimit: 10,
     host: "localhost",
@@ -9,56 +10,58 @@ const pool = mysql.createPool({
     database: "apidatabase"
 });
 
+const util = require('util');
+
+pool.query = util.promisify(pool.query);
+
 router.use((err, req, res, next) => {
     console.error(err);
     res.status(500).json({ message: 'Something went wrong!', error: err.message });
 });
 
+function buildXml(data) {
+    const xml = builder.create('Countries');
+    for (const item of data) {
+        xml.ele('Country')
+            .ele('Country', item['Country']).up()
+            .ele('total_litres_of_pure_alcohol', item['total_litres_of_pure_alcohol']).up()
+            .ele('continent', item['continent']).end();
+    }
+    const xmldoc = xml.end({ pretty: true });
+    return `<?xml version='1.0' encoding='UTF-8' ?>\n${xmldoc}`;
+}
+
 router.get('/', async (req, res, next) => {
-    await pool.query("SELECT * FROM `alcohol-usage`", function (err, result, fields) {
-        if (err) next(err);
+    try{
+        const result = await pool.query("SELECT * FROM `alcohol-usage`");
+        
         if (req.headers['content-type'] === "application/xml") {
-            var xml = builder.create('Countries');
-            if (result.length != 0) {
-                for (var i = 0; i < result.length; i++) {
-                    xml.ele('Country')
-                        .ele('Country', result[i]['Country']).up()
-                        .ele('total_litres_of_pure_alcohol', result[i]['total_litres_of_pure_alcohol']).up()
-                        .ele('continent', result[i]['continent']).end()
-                }
-                var xmldoc = xml.toString({ pretty: true });
-                var xmldoc = xmldoc.replace(/^/, "<?xml version='1.0' encoding='UTF-8' ?>\n");
-                res.status(200).send(xmldoc);
-            }
+            const xmlDoc = buildXml(result);
+            res.send(xmlDoc);
         } else {
             res.status(200).json(result);
         }
+    } catch (err) {
+        next(err);
+    }
     });
-});
 
 
 router.get('/:COUNTRY', async (req, res, next) => {
     var country = req.params.COUNTRY
-    await pool.query("SELECT * FROM `alcohol-usage` WHERE Country ='" + country + "'", function (err, Country, fields) {
-        if (err) next(err);
+    try{
+    const result = await pool.query("SELECT * FROM `alcohol-usage` WHERE Country ='" + country + "'");
+        
         if (req.headers['content-type'] === "application/xml") {
-            var xml = builder.create('Countries');
-            if (err) next(err);
-            for (var i = 0; i < result.length; i++) {
-                xml.ele('Country')
-                    .ele('Country', result[i]['Country']).up()
-                    .ele('total_litres_of_pure_alcohol', result[i]['total_litres_of_pure_alcohol']).up()
-                    .ele('continent', result[i]['continent']).end()
-            }
-            var xmldoc = xml.toString({ pretty: true });
-            var xmldoc = xmldoc.replace(/^/, "<?xml version='1.0' encoding='UTF-8' ?>\n");
-            xmldoc += "</countries";
-            res.status(200).send(xmldoc);
+            const xmlDoc = buildXml(result);
+            res.send(xmlDoc);
         } else {
-            return res.status(200).send({ Country });
+            res.status(200).json(result);
         }
+    } catch(err) {  
+        next(err);
+    }
     });
-});
 
 router.get('/continent/:continent', async (req, res, next) => {
     const continent = req.params.continent;
@@ -70,25 +73,13 @@ router.get('/continent/:continent', async (req, res, next) => {
         case "AN":
         case "OC":
         case "SA":
-            await pool.query("SELECT * FROM `alcohol-usage` WHERE continent = '" + continent + "'", function (err, result, fields) {
-                if (err) next(err);
+            const result = await pool.query("SELECT * FROM `alcohol-usage` WHERE continent = '" + continent + "'");
                 if (req.headers['content-type'] === "application/xml") {
-                    var xml = builder.create('Countries');
-                    if (err) next(err);
-                    for (var i = 0; i < result.length; i++) {
-                        xml.ele('Country')
-                            .ele('Country', result[i]['Country']).up()
-                            .ele('total_litres_of_pure_alcohol', result[i]['total_litres_of_pure_alcohol']).up()
-                            .ele('continent', result[i]['continent']).end()
-                    }
-                    var xmldoc = xml.toString({ pretty: true });
-                    var xmldoc = xmldoc.replace(/^/, "<?xml version='1.0' encoding='UTF-8' ?>\n");
-                    res.send(xmldoc);
-                }
-                else {
+                    const xmlDoc = buildXml(result);
+                    res.send(xmlDoc);
+                } else {
                     res.status(200).json(result);
                 }
-            });
             break;
         case "ATL":
             res.status(200).json({
