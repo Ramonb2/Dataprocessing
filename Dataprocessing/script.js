@@ -1,8 +1,6 @@
 function jsonChart(){
     var route = document.getElementById("mySelect").value;
-    if(route == null){
-        route = "EU";
-    }
+
 var myArr = [];
 var dynamicColors = function () {
     var r = Math.floor(Math.random() * 255);
@@ -10,8 +8,8 @@ var dynamicColors = function () {
     var b = Math.floor(Math.random() * 255);
     return "rgb(" + r + "," + g + "," + b + ")";
 };
-var xmlhttp = new XMLHttpRequest();
-xmlhttp.onreadystatechange = function () {
+var http = new XMLHttpRequest();
+http.onreadystatechange = function () {
     if (this.status == 200) {
         myArr = JSON.parse(this.responseText);
 
@@ -64,12 +62,9 @@ xmlhttp.onreadystatechange = function () {
     
 
 };
-if(route === null){
-    xmlhttp.open('GET', 'http://localhost:3000/AGD/EU', true);
-} else{
-    xmlhttp.open('GET', 'http://localhost:3000/AGD/'+route, true);
-}
-xmlhttp.send();
+    http.open('GET', 'http://localhost:3000/AGD/'+route, true);
+
+http.send();
 
 
 }

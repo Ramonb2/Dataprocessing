@@ -3,43 +3,33 @@ const morgan = require('morgan');
 const swaggerJsDoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express")
 const bodyParser = require('body-parser');
-var xmlparser = require('express-xml-bodyparser');
 
 const swaggerOptions = {
     swaggerDefinition: {
-            openapi: "3.0.0",
-            info:{
-                title: "rest api for Dataprocessing",
-                version: "1.6",
-                description: "Dataprocessing api",
-                contact: {
-                    name:"Ramon Brakels"
-                },       
+        openapi: "3.0.0",
+        info: {
+            title: "rest api for Dataprocessing",
+            version: "1.6",
+            description: "Dataprocessing api",
+            contact: {
+                name: "Ramon Brakels"
             },
-            servers: [
-                {
-                    url: "http://{username}:{port}/{basePath}",
-                    description: "Database",
-                    variables: {
-                        username: {
-                            default: "localhost",
-                            description: "value"
-                        }
-                    },
-                    port: {
-                        enum: [
-                            3000
-                        ],
-                        default: 3000
-                    },
-                    basePath: {
-                        default: "/"
+        },
+        servers: [
+            {
+                url: "http://{username}:3000",
+                description: "Database",
+                variables: {
+                    username: {
+                        default: "localhost",
+                        description: "value"
                     }
-                }
-                
-            ]
+                },
+            }
+
+        ]
     },
-    apis: ["./AGD/*.js", "./countries/*.js","./depression/*.js", "./wealth/*.js","./alcohol-usage/*.js"]
+    apis: ["./api/routes/json/*.js", "./api/routes/xml/*.js"]
 };
 
 
@@ -62,6 +52,8 @@ app.all('*', function (req, res, next) {
     next();
 });
 
+app.use(bodyParser.urlencoded({ extended: false }));
+
 const AGD = require('./api/routes/json/AGD');
 const alcohol_usage = require('./api/routes/json/alcohol-usage');
 const world_wealth_index = require('./api/routes/json/world_wealth_index');
@@ -74,9 +66,8 @@ const xmlcountries = require('./api/routes/xml/countries');
 const xmldepression = require('./api/routes/xml/depression');
 
 app.use(morgan('dev'));
-app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(xmlparser());
 
 app.use('/AGD', AGD);
 app.use('/alcohol-usage', alcohol_usage);
@@ -90,19 +81,19 @@ app.use('/xml/depression', xmldepression);
 app.use('/xml/countries', xmlcountries);
 
 
-app.use((req,res,next)=>{
+app.use((req, res, next) => {
     const error = new Error('Not found!');
     error.status = 404;
     next(error);
 });
 
-app.use((error, req,res,next)=>{
+app.use((error, req, res, next) => {
     res.status(error.status || 500);
     res.json({
-        error:{
+        error: {
             message: error.message
         }
-    }) 
+    })
 })
 
 module.exports = app;

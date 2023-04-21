@@ -9,12 +9,25 @@ const con = mysql.createConnection({
     database: "apidatabase"
 });
 
+/**
+ * @swagger
+ * /depression:
+ *  get:
+ *      description: Select depression data from database
+ *      responses:
+ *          '200':
+ *              description: A successful response
+ *          '204':
+ *              description: Record not found
+ *          '400':
+ *              description: Bad GET Request
+ */
 
 router.get('/', (req, res, next) => {
     con.connect(function (err) {
         con.query("SELECT * FROM `depression`", function (err, result, fields) {
             if (err) throw err;
-            if(req.headers['content-type'] === "application/xml"){
+            if (req.headers['content-type'] === "application/xml") {
                 var xml = builder.create('Countries');
                 if (err) throw err;
                 if (result.length != 0) {
@@ -28,41 +41,66 @@ router.get('/', (req, res, next) => {
                     var xmldoc = xml.toString({ pretty: true });
                     var xmldoc = xmldoc.replace(/^/, "<?xml version='1.0' encoding='UTF-8' ?>\n");
                     res.status(200).send(xmldoc);
-            }
-        } else{
+                }
+            } else {
                 res.status(200).json(result);
             }
         });
     });
 });
 
-
+/**
+ * @swagger
+ * /depression/{COUNTRY}:
+ *  get:
+ *      description: Select depression data for a specific country from database
+ *      responses:
+ *          '200':
+ *              description: A successful response
+ *          '204':
+ *              description: Record not found
+ *          '400':
+ *              description: Bad GET Request
+ */
 router.get('/:COUNTRY', (req, res, next) => {
     var country = req.params.COUNTRY
     con.connect(function (err) {
         con.query("SELECT * FROM `depression` WHERE Country ='" + country + "'", function (err, Country, fields) {
             if (err) throw err;
-            if(req.headers['content-type'] === "application/xml"){
-            var xml = builder.create('Countries');
-            if (result.length != 0) {
-                for (var i = 0; i < result.length; i++) {
-                    xml.ele('Country')
-                        .ele('Country', result[i]['Country']).up()
-                        .ele('Code', result[i]['Code']).up()
-                        .ele('Year', result[i]['Year']).up()
-                        .ele('Depression', result[i]['Depression']).end()
+            if (req.headers['content-type'] === "application/xml") {
+                var xml = builder.create('Countries');
+                if (result.length != 0) {
+                    for (var i = 0; i < result.length; i++) {
+                        xml.ele('Country')
+                            .ele('Country', result[i]['Country']).up()
+                            .ele('Code', result[i]['Code']).up()
+                            .ele('Year', result[i]['Year']).up()
+                            .ele('Depression', result[i]['Depression']).end()
+                    }
+                    var xmldoc = xml.toString({ pretty: true });
+                    var xmldoc = xmldoc.replace(/^/, "<?xml version='1.0' encoding='UTF-8' ?>\n");
+                    res.status(200).send(xmldoc);
                 }
-                var xmldoc = xml.toString({ pretty: true });
-                var xmldoc = xmldoc.replace(/^/, "<?xml version='1.0' encoding='UTF-8' ?>\n");
-                res.status(200).send(xmldoc);
-            }
-            } else{
+            } else {
                 return res.status(200).send({ Country });
             }
         });
     });
 });
 
+/**
+ * @swagger
+ * /depression/continent/{continent}:
+ *  get:
+ *      description: Select depression data for a specific whole continent from database
+ *      responses:
+ *          '200':
+ *              description: A successful response
+ *          '204':
+ *              description: Record not found
+ *          '400':
+ *              description: Bad GET Request
+ */
 router.get('/continent/:continent', (req, res, next) => {
     con.connect(function (err) {
         const continent = req.params.continent;
@@ -78,7 +116,7 @@ router.get('/continent/:continent', (req, res, next) => {
                     "inner join countries as B on A.Country = B.COUNTRY_NAME " +
                     "WHERE B.CONTINENT_CODE = '" + continent + "'", function (err, result, fields) {
                         if (err) throw err;
-                        if(req.headers['content-type'] === "application/xml"){
+                        if (req.headers['content-type'] === "application/xml") {
                             var xml = builder.create('Countries');
                             if (result.length != 0) {
                                 for (var i = 0; i < result.length; i++) {
@@ -91,10 +129,10 @@ router.get('/continent/:continent', (req, res, next) => {
                                 var xmldoc = xml.toString({ pretty: true });
                                 var xmldoc = xmldoc.replace(/^/, "<?xml version='1.0' encoding='UTF-8' ?>\n");
                                 res.status(200).send(xmldoc);
+                            }
+                        } else {
+                            res.status(200).json(result);
                         }
-                    } else{
-                        res.status(200).json(result);
-                    }
                     });
                 break;
             case "ATL":
@@ -111,7 +149,19 @@ router.get('/continent/:continent', (req, res, next) => {
     });
 });
 
-
+/**
+ * @swagger
+ * /depression:
+ *  post:
+ *      description: post depression data to database
+ *      responses:
+ *          '200':
+ *              description: A successful response
+ *          '204':
+ *              description: Record not found
+ *          '400':
+ *              description: Bad GET Request
+ */
 router.post('/', function (req, res, next) {
     const data = {
         country: req.body.Country,
@@ -133,7 +183,19 @@ router.post('/', function (req, res, next) {
     });
 });
 
-
+/**
+ * @swagger
+ * /depression/{COUNTRY}:
+ *  delete:
+ *      description: delete depression data for a specific country from database
+ *      responses:
+ *          '200':
+ *              description: A successful response
+ *          '204':
+ *              description: Record not found
+ *          '400':
+ *              description: Bad GET Request
+ */
 router.delete('/:COUNTRY', (req, res, next) => {
     var country = req.params.COUNTRY
     con.connect(function (err) {

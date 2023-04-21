@@ -34,7 +34,7 @@ router.get('/', function (req, res, next) {
 
 router.get('/:continent', (req, res, next) => {
     const continent = req.params.continent;
-    con.connect(function (err) {
+    /*con.connect(function (err) {
         switch (continent.toUpperCase()) {
             case "EU":
             case "NA":
@@ -71,7 +71,7 @@ router.get('/:continent', (req, res, next) => {
 
         }
 
-    });
+    });*/
 
 });
 
