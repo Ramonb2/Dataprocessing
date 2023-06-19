@@ -1,14 +1,8 @@
 const express = require('express');
 const router = express.Router();
-var mysql = require('mysql');
-var builder = require('xmlbuilder');
-const con = mysql.createPool({
-    connectionLimit: 10,
-    host: "localhost",
-    user: "root",
-    password: "",
-    database: "apidatabase"
-});
+const mysql = require('mysql');
+const builder = require('xmlbuilder');
+const pool = require('../../../db')
 
 const parser = require('../../../Validators/jsonValidator');
 
@@ -33,21 +27,21 @@ router.use((err, req, res, next) => {
  */
 
 router.get('/', async (req, res, next) => {
-    await con.query("SELECT * FROM `depression`", function (err, result, fields) {
+    await pool.query("SELECT * FROM `depression`", function (err, result, fields) {
         if (err) next(err);
         if (req.headers['content-type'] === "application/xml") {
-            var xml = builder.create('Countries');
+            const xml = builder.create('Countries');
             if (err) throw err;
             if (result.length != 0) {
-                for (var i = 0; i < result.length; i++) {
+                for (let i = 0; i < result.length; i++) {
                     xml.ele('Country')
                         .ele('Country', result[i]['Country']).up()
                         .ele('Code', result[i]['Code']).up()
                         .ele('Year', result[i]['Year']).up()
                         .ele('Depression', result[i]['Depression']).end()
                 }
-                var xmldoc = xml.toString({ pretty: true });
-                var xmldoc = xmldoc.replace(/^/, "<?xml version='1.0' encoding='UTF-8' ?>\n");
+                let xmldoc = xml.toString({ pretty: true });
+                 xmldoc = xmldoc.replace(/^/, "<?xml version='1.0' encoding='UTF-8' ?>\n");
                 res.status(200).send(xmldoc);
             }
         } else {
@@ -72,21 +66,21 @@ router.get('/', async (req, res, next) => {
  *              description: Bad GET Request
  */
 router.get('/:COUNTRY', async (req, res, next) => {
-    var country = req.params.COUNTRY
-    await con.query("SELECT * FROM `depression` WHERE Country ='" + country + "'", function (err, Country, fields) {
+    const country = req.params.COUNTRY
+    await pool.query("SELECT * FROM `depression` WHERE Country =?", [country], function (err, Country, fields) {
         if (err) next(err);
         if (req.headers['content-type'] === "application/xml") {
-            var xml = builder.create('Countries');
+            const xml = builder.create('Countries');
             if (result.length != 0) {
-                for (var i = 0; i < result.length; i++) {
+                for (let i = 0; i < result.length; i++) {
                     xml.ele('Country')
                         .ele('Country', result[i]['Country']).up()
                         .ele('Code', result[i]['Code']).up()
                         .ele('Year', result[i]['Year']).up()
                         .ele('Depression', result[i]['Depression']).end()
                 }
-                var xmldoc = xml.toString({ pretty: true });
-                var xmldoc = xmldoc.replace(/^/, "<?xml version='1.0' encoding='UTF-8' ?>\n");
+                let xmldoc = xml.toString({ pretty: true });
+                xmldoc = xmldoc.replace(/^/, "<?xml version='1.0' encoding='UTF-8' ?>\n");
                 res.status(200).send(xmldoc);
             }
         } else {
@@ -120,22 +114,22 @@ router.get('/continent/:continent', async (req, res, next) => {
         case "AN":
         case "OC":
         case "SA":
-            await con.query("SELECT * FROM `depression` as A " +
+            await pool.query("SELECT * FROM `depression` as A " +
                 "inner join countries as B on A.Country = B.COUNTRY_NAME " +
-                "WHERE B.CONTINENT_CODE = '" + continent + "'", function (err, result, fields) {
+                "WHERE B.CONTINENT_CODE = '" + continent + "'", [continent], function (err, result, fields) {
                     if (err) next(err);
                     if (req.headers['content-type'] === "application/xml") {
-                        var xml = builder.create('Countries');
+                        const xml = builder.create('Countries');
                         if (result.length != 0) {
-                            for (var i = 0; i < result.length; i++) {
+                            for (let i = 0; i < result.length; i++) {
                                 xml.ele('Country')
                                     .ele('Country', result[i]['Country']).up()
                                     .ele('Code', result[i]['Code']).up()
                                     .ele('Year', result[i]['Year']).up()
                                     .ele('Depression', result[i]['Depression']).end()
                             }
-                            var xmldoc = xml.toString({ pretty: true });
-                            var xmldoc = xmldoc.replace(/^/, "<?xml version='1.0' encoding='UTF-8' ?>\n");
+                            let xmldoc = xml.toString({ pretty: true });
+                             xmldoc = xmldoc.replace(/^/, "<?xml version='1.0' encoding='UTF-8' ?>\n");
                             res.status(200).send(xmldoc);
                         }
                     } else {
@@ -172,24 +166,22 @@ router.get('/continent/:continent', async (req, res, next) => {
  *              description: Bad GET Request
  */
 router.post('/', async function (req, res, next) {
-    if(parser(req.body)){
-    const data = {
-        country: req.body.Country,
-        Code: req.body.Code,
-        Year: req.body.Year,
-        Depression: req.body.Depression
-    }
-    if (!data) {
-        return res.status(400).send({ error: true, message: 'please provide all required fields' });
-    }
+    if (parser(req.body)) {
+        const data = {
+            country: req.body.Country,
+            Code: req.body.Code,
+            Year: req.body.Year,
+            Depression: req.body.Depression
+        }
+        if (!data) {
+            return res.status(400).send({ error: true, message: 'please provide all required fields' });
+        }
 
-    await con.query("INSERT INTO `depression` VALUES('" + data.country + "', '"
-        + data.Code + "', '" + data.Year + "', '"
-        + data.Depression + "')", function (err, result, fields) {
+        await pool.query("INSERT INTO `depression` VALUES(?, ?, ?, ?)", [data.country, data.Code, data.Year, data.Depression], function (err, result, fields) {
             if (err) next(err);
             return res.status(200).send({ message: 'Depression records succesfully inserted.' });
         });
-    }else{
+    } else {
         res.status(400).send({ error: true, message: 'please provide all required fields' });
     }
 });
@@ -210,8 +202,8 @@ router.post('/', async function (req, res, next) {
  *              description: Bad GET Request
  */
 router.delete('/:COUNTRY', async (req, res, next) => {
-    var country = req.params.COUNTRY
-    await con.query("DELETE FROM `world-index` WHERE Country ='" + country + "'", function (err, Country, fields) {
+    const country = req.params.COUNTRY
+    await pool.query("DELETE FROM `world-index` WHERE Country =?", [country], function (err, Country, fields) {
         if (err) next(err);
         return res.status(200).send({ message: "Succesfully deleted record" });
     });

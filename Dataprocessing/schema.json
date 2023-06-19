@@ -1,60 +1,76 @@
 {
-    "definitions": {},
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "http://example.com/root.json",
-    "type": "array",
-    "title": "Country Schema",
-    "items": {
-        "$id": "#/Coutries",
-        "type": "object",
-        "title": "Country Schema",
-        "required": [
-            "Country",
-            "depression",
-            "Log_of_GDP_per_capita",
-            "total_litres_of_pure_alcohol"
-        ],
-        "properties": {
-            "Country": {
-                "$id": "Country",
-                "type": "string",
-                "title": "The Country Schema",
-                "default": "",
-                "examples": [
-                    "Nederland"
-                ],
-                "pattern": "[^+@#%&amp;()&lt;&gt;?-]+",
-                "maxLength": 47
-            },
-            "depression": {
-                "$id": "depression",
-                "type": "number",
-                "title": "The Depression Schema",
-                "default": 0.0,
-                "examples": [
-                    4.1
-                ]
-            },
-            "Log_of_GDP_per_capita": {
-                "$id": "Log_of_GDP_per_capita",
-                "type": "number",
-                "title": "The Log_of_gdp_per_capita Schema",
-                "default": 0,
-                "examples": [
-                    134
-                ],
-                "maximum" : 152
-            },
-            "total_litres_of_pure_alcohol": {
-                "$id": "total_litres_of_pure_alcohol",
-                "type": "number",
-                "title": "The Total_litres_of_pure_alcohol Schema",
-                "default": 0,
-                "examples": [
-                    0
-                ],
-                "minimum" : 0
-            }
-        }
-    }
+	"definitions": {},
+	"$schema": "http://json-schema.org/draft-07/schema#", 
+	
+	"title": "Root", 
+	"type": "object",
+	"required": [
+		"CODE",
+		"COUNTRY_NAME",
+		"FULL_NAME",
+		"ISO3",
+		"COUNTRY_NUMBER",
+		"CONTINENT_CODE"
+	],
+	"properties": {
+		"CODE": {
+			"$id": "#root/CODE", 
+			"title": "Code", 
+			"type": "string",
+			"default": "",
+			"examples": [
+				"AQaa"
+			],
+			"pattern": "^.*$"
+		},
+		"COUNTRY_NAME": {
+			"$id": "#root/COUNTRY_NAME", 
+			"title": "Country_name", 
+			"type": "string",
+			"default": "",
+			"examples": [
+				"Andorraq"
+			],
+			"pattern": "^.*$"
+		},
+		"FULL_NAME": {
+			"$id": "#root/FULL_NAME", 
+			"title": "Full_name", 
+			"type": "string",
+			"default": "",
+			"examples": [
+				"Principality of Andorra"
+			],
+			"pattern": "^.*$"
+		},
+		"ISO3": {
+			"$id": "#root/ISO3", 
+			"title": "Iso3", 
+			"type": "string",
+			"default": "",
+			"examples": [
+				"AND"
+			],
+			"pattern": "^.*$"
+		},
+		"COUNTRY_NUMBER": {
+			"$id": "#root/COUNTRY_NUMBER", 
+			"title": "Country_number", 
+			"type": "integer",
+			"examples": [
+				20
+			],
+			"default": 0
+		},
+		"CONTINENT_CODE": {
+			"$id": "#root/CONTINENT_CODE", 
+			"title": "Continent_code", 
+			"type": "string",
+			"default": "",
+			"examples": [
+				"EU"
+			],
+			"pattern": "^.*$"
+		}
+	}
 }

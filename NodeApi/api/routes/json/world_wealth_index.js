@@ -4,13 +4,7 @@ const swaggerUi = require("swagger-ui-express")
 const router = express.Router();
 var mysql = require('mysql');
 var builder = require('xmlbuilder');
-const pool = mysql.createPool({
-    connectionLimit: 10,
-    host: "localhost",
-    user: "root",
-    password: "",
-    database: "apidatabase"
-});
+const pool = require('../../../db')
 
 router.use((err, req, res, next) => {
     console.error(err);
@@ -21,7 +15,7 @@ router.use((err, req, res, next) => {
 function buildXml(data) {
     const builder = require('xmlbuilder');
     const xml = builder.create('Countries');
-    
+
     data.forEach(item => {
         const countryElement = xml.ele('Country');
         countryElement.ele('Country', item['Country']).up()
@@ -56,8 +50,8 @@ function buildXml(data) {
  *              description: Bad GET Request
  */
 router.get('/', async (req, res, next) => {
-    try{
-    const result = await pool.query("SELECT * FROM `world-index`");
+    try {
+        const result = await pool.query("SELECT * FROM `world-index`");
         if (req.headers['content-type'] === "application/xml") {
             var xmldoc = buildXml(result);
             res.send(xmldoc);

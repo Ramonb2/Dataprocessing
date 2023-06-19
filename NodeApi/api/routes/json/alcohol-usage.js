@@ -1,14 +1,8 @@
 const express = require('express');
 const router = express.Router();
-var mysql = require('mysql');
+const mysql = require('mysql');
 const builder = require('xmlbuilder');
-const pool = mysql.createPool({
-    connectionLimit: 10,
-    host: "localhost",
-    user: "root",
-    password: "",
-    database: "apidatabase"
-});
+const pool = require('../../../db')
 
 const util = require('util');
 
@@ -32,9 +26,9 @@ function buildXml(data) {
 }
 
 router.get('/', async (req, res, next) => {
-    try{
+    try {
         const result = await pool.query("SELECT * FROM `alcohol-usage`");
-        
+
         if (req.headers['content-type'] === "application/xml") {
             const xmlDoc = buildXml(result);
             res.send(xmlDoc);
@@ -44,24 +38,24 @@ router.get('/', async (req, res, next) => {
     } catch (err) {
         next(err);
     }
-    });
+});
 
 
 router.get('/:COUNTRY', async (req, res, next) => {
-    var country = req.params.COUNTRY
-    try{
-    const result = await pool.query("SELECT * FROM `alcohol-usage` WHERE Country ='" + country + "'");
-        
+    let country = req.params.COUNTRY
+    try {
+        const result = await pool.query("SELECT * FROM `alcohol-usage` WHERE Country =?", [country]);
+
         if (req.headers['content-type'] === "application/xml") {
             const xmlDoc = buildXml(result);
             res.send(xmlDoc);
         } else {
             res.status(200).json(result);
         }
-    } catch(err) {  
+    } catch (err) {
         next(err);
     }
-    });
+});
 
 router.get('/continent/:continent', async (req, res, next) => {
     const continent = req.params.continent;
@@ -73,13 +67,13 @@ router.get('/continent/:continent', async (req, res, next) => {
         case "AN":
         case "OC":
         case "SA":
-            const result = await pool.query("SELECT * FROM `alcohol-usage` WHERE continent = '" + continent + "'");
-                if (req.headers['content-type'] === "application/xml") {
-                    const xmlDoc = buildXml(result);
-                    res.send(xmlDoc);
-                } else {
-                    res.status(200).json(result);
-                }
+            const result = await pool.query("SELECT * FROM `alcohol-usage` WHERE continent = ?", [continent]);
+            if (req.headers['content-type'] === "application/xml") {
+                const xmlDoc = buildXml(result);
+                res.send(xmlDoc);
+            } else {
+                res.status(200).json(result);
+            }
             break;
         case "ATL":
             res.status(200).json({
@@ -105,16 +99,15 @@ router.post('/', async function (req, res, next) {
         return res.status(400).send({ error: true, message: 'please provide all required fields' });
     }
 
-    await pool.query("INSERT INTO`alcohol-usage` VALUES('" + Country.country + "', '"
-        + Country.total_litres_of_pure_alcohol + "', '" + Country.continent + "')", function (err, result, fields) {
-            if (err) next(err);
-            return res.status(200).send({ message: 'Alcohol-usage succesfully inserted.' });
-        });
+    await pool.query("INSERT INTO`alcohol-usage` VALUES(?, ?, ?)", [Country.country, Country.total_litres_of_pure_alcohol, Country.continent], function (err, result, fields) {
+        if (err) next(err);
+        return res.status(200).send({ message: 'Alcohol-usage succesfully inserted.' });
+    });
 });
 
 
 router.patch('/:COUNTRY', async (req, res, next) => {
-    var Country = req.params.COUNTRY
+    let Country = req.params.COUNTRY
     const data = {
         country: req.body.Country,
         total_litres_of_pure_alcohol: req.body.total_litres_of_pure_alcohol,
@@ -123,18 +116,16 @@ router.patch('/:COUNTRY', async (req, res, next) => {
     if (!Country) {
         return res.status(400).send({ error: true, message: 'please provide all required fields' });
     }
-    await pool.query("UPDATE countries SET Country ='" + data.country + "',total_litres_of_pure_alcohol='" +
-        data.total_litres_of_pure_alcohol + "', continent='" + data.continent +
-        "'", function (err, result, fields) {
-            if (err) next(err);
-            return res.status(200).send({ message: 'alcohol usage succesfully updated.' });
-        });
+    await pool.query("UPDATE countries SET Country =?,total_litres_of_pure_alcohol=?, continent=?", [data.country, data.total_litres_of_pure_alcohol, data.continent], function (err, result, fields) {
+        if (err) next(err);
+        return res.status(200).send({ message: 'alcohol usage succesfully updated.' });
+    });
 });
 
 
 router.delete('/:COUNTRY', async (req, res, next) => {
-    var country = req.params.COUNTRY
-    await pool.query("DELETE FROM `alcohol-usage` WHERE Country ='" + country + "'", function (err, Country, fields) {
+    let country = req.params.COUNTRY
+    await pool.query("DELETE FROM `alcohol-usage` WHERE Country =?", [country], function (err, Country, fields) {
         if (err) next(err);
         return res.status(200).send({ message: "Succesfully deleted record" });
     });

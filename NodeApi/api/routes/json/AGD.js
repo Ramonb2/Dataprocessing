@@ -3,13 +3,8 @@ const router = express.Router();
 const mysql = require('mysql');
 const builder = require('xmlbuilder');
 
-const pool = mysql.createPool({
-    connectionLimit: 10,
-    host: "localhost",
-    user: "root",
-    password: "",
-    database: "apidatabase"
-});
+const pool = require('../../../db')
+
 
 
 function buildXMLResponse(result) {
